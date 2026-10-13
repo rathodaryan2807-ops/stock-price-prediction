@@ -1,7 +1,8 @@
-streamlit
-yfinance
-numpy
-pandas
-scikit-learn
-joblib
-tensorflow-cpu
+streamlit>=1.36
+yfinance>=0.2.40
+numpy>=1.26,<2.2
+pandas>=2.1,<3.0
+scikit-learn>=1.4
+matplotlib>=3.8
+joblib>=1.3
+tensorflow>=2.16,<2.20
