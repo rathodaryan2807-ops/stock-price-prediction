@@ -1,4 +1,4 @@
-"""
+""""
 Trains the LSTM used by the Streamlit app and saves:
   - lstm_stock_model.keras
   - scaler.pkl
