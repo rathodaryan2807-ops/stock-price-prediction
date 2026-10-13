@@ -1,90 +1,104 @@
-""""
-Trains the LSTM used by the Streamlit app and saves:
-  - lstm_stock_model.keras
-  - scaler.pkl
- 
-Run:  python stock_price_prediction.py
-Settings below must match the app (WINDOW, single 'Close' feature).
 """
+Stock Price Prediction using LSTM
+Standalone training/evaluation script.
+
+Run:
+    python stock_price_prediction.py
+
+For the interactive web app:
+    streamlit run app.py
+"""
+from pathlib import Path
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import yfinance as yf
-import joblib
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout, Input
+from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
- 
+import joblib
+
 TICKER = "RELIANCE.NS"
 PERIOD = "10y"
-WINDOW = 60  # same as app.py
-MODEL_PATH = "lstm_stock_model.keras"
-SCALER_PATH = "scaler.pkl"
- 
- 
-def load_close(ticker, period):
-    df = yf.download(ticker, period=period, progress=False)
-    if df is None or df.empty:
-        raise SystemExit(f"No data for {ticker}")
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = df.columns.get_level_values(0)
-    return df[["Close"]].dropna()
- 
- 
-def make_windows(arr, window):
-    X, y = [], []
-    for i in range(window, len(arr)):
-        X.append(arr[i - window:i, 0])
-        y.append(arr[i, 0])
-    X = np.array(X).reshape(-1, window, 1)
-    return X, np.array(y)
- 
- 
+WINDOW = 60
+EPOCHS = 20
+BATCH_SIZE = 32
+MODEL_PATH = Path("lstm_stock_model.keras")
+SCALER_PATH = Path("scaler.pkl")
+
+
+def download_data(ticker: str, period: str) -> pd.DataFrame:
+    data = yf.download(ticker, period=period, auto_adjust=False, progress=False)
+    if data.empty:
+        raise RuntimeError(f"No data received for {ticker}. Check the ticker symbol.")
+    if isinstance(data.columns, pd.MultiIndex):
+        data.columns = data.columns.get_level_values(0)
+    if "Close" not in data.columns:
+        raise RuntimeError("The downloaded data does not contain a Close column.")
+    return data[["Close"]].dropna()
+
+
+def make_sequences(values: np.ndarray, window: int):
+    x, y = [], []
+    for i in range(window, len(values)):
+        x.append(values[i-window:i, 0])
+        y.append(values[i, 0])
+    return np.asarray(x).reshape(-1, window, 1), np.asarray(y)
+
+
 def main():
-    df = load_close(TICKER, PERIOD)
-    values = df.values  # shape (n, 1), same as the app
- 
+    df = download_data(TICKER, PERIOD)
+    if len(df) < WINDOW + 50:
+        raise RuntimeError("Not enough historical data to train the model.")
+
+    values = df[["Close"]].values.astype("float32")
     split = int(len(values) * 0.8)
-    train_raw, test_raw = values[:split], values[split - WINDOW:]
- 
-    # fit scaler on train only (no leakage)
     scaler = MinMaxScaler()
-    train_scaled = scaler.fit_transform(train_raw)
-    test_scaled = scaler.transform(test_raw)
- 
-    X_train, y_train = make_windows(train_scaled, WINDOW)
-    X_test, y_test = make_windows(test_scaled, WINDOW)
- 
+    scaler.fit(values[:split])
+    scaled = scaler.transform(values)
+
+    x_train, y_train = make_sequences(scaled[:split], WINDOW)
+    x_test, y_test = make_sequences(scaled[split-WINDOW:], WINDOW)
+
     model = Sequential([
-        Input(shape=(WINDOW, 1)),
-        LSTM(64, return_sequences=True),
+        LSTM(32, return_sequences=True, input_shape=(WINDOW, 1)),
         Dropout(0.2),
         LSTM(32),
         Dropout(0.2),
+        Dense(16, activation="relu"),
         Dense(1),
     ])
     model.compile(optimizer="adam", loss="mse")
- 
+    model.summary()
+    early_stop = EarlyStopping(monitor="val_loss", patience=4, restore_best_weights=True)
     model.fit(
-        X_train, y_train,
-        validation_split=0.1,
-        epochs=50,
-        batch_size=32,
-        callbacks=[EarlyStopping(patience=5, restore_best_weights=True)],
-        verbose=2,
+        x_train, y_train, epochs=EPOCHS, batch_size=BATCH_SIZE,
+        validation_split=0.1, callbacks=[early_stop], verbose=1,
     )
- 
-    pred = scaler.inverse_transform(model.predict(X_test, verbose=0))
+
+    pred = scaler.inverse_transform(model.predict(x_test, verbose=0))
     actual = scaler.inverse_transform(y_test.reshape(-1, 1))
-    rmse = float(np.sqrt(np.mean((pred - actual) ** 2)))
-    mape = float(np.mean(np.abs((pred - actual) / actual)) * 100)
-    print(f"Test RMSE: {rmse:.2f} | MAPE: {mape:.2f}%")
- 
+    rmse = np.sqrt(mean_squared_error(actual, pred))
+    mae = mean_absolute_error(actual, pred)
+    r2 = r2_score(actual, pred)
+    print(f"Ticker: {TICKER}")
+    print(f"RMSE: {rmse:.2f} | MAE: {mae:.2f} | R2: {r2:.3f}")
+
+    test_dates = df.index[split:]
+    plt.figure(figsize=(12, 5))
+    plt.plot(test_dates[:len(actual)], actual, label="Actual")
+    plt.plot(test_dates[:len(pred)], pred, label="LSTM predicted")
+    plt.title(f"{TICKER}: Actual vs Predicted")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
     model.save(MODEL_PATH)
     joblib.dump(scaler, SCALER_PATH)
-    print(f"Saved {MODEL_PATH} and {SCALER_PATH}")
- 
- 
+    print(f"Saved model to {MODEL_PATH} and scaler to {SCALER_PATH}")
+
+
 if __name__ == "__main__":
     main()
- 
