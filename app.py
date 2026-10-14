@@ -198,46 +198,48 @@ if st.button("🚀 Train model and predict", type="primary", use_container_width
         st.code(f"{type(exc).__name__}: {exc}")
         st.caption("If the error mentions TensorFlow or Python, fix the Python version in Streamlit Cloud before retrying.")
 else:
-    st.markdown("## Welcome to the Stock Price Prediction Project")
-    st.write(
-        "This seminar project demonstrates how historical stock-price data and an "
-        "LSTM (Long Short-Term Memory) deep-learning model can be used to estimate "
-        "possible future closing prices. It is designed for learning and experimentation."
-    )
-    st.markdown("### 🚀 How to use the website")
     st.markdown(
-        "1. **Find a stock:** In the left sidebar, type the beginning of a company name, "
-        "such as `Tata`, `Reliance`, `Infosys`, or `Apple`, then select a result.\n"
-        "2. **Choose historical data:** Select 2 years, 5 years, or 10 years.\n"
-        "3. **Set forecast options:** Choose 1–30 future business days and the training epochs.\n"
-        "4. **Run prediction:** Click **Train model and predict** and wait for training to finish.\n"
-        "5. **Review results:** Check the historical chart, actual-versus-predicted chart, RMSE, MAE, and future forecast.\n"
-        "6. **Export results:** Download the forecast as a CSV file."
+        """
+        <div style="
+            padding: 30px 28px; border-radius: 18px;
+            background: linear-gradient(120deg, #152b48 0%, #174c58 55%, #163b35 100%);
+            border: 1px solid rgba(120, 210, 190, .25);
+            margin: 4px 0 22px 0;">
+            <div style="font-size: 13px; letter-spacing: 2px; color: #8de2cb; font-weight: 700;">
+                MACHINE LEARNING • FINANCIAL DATA
+            </div>
+            <h1 style="font-size: 36px; line-height: 1.15; color: white; margin: 12px 0;">
+                Stock Price Prediction
+            </h1>
+            <p style="font-size: 17px; color: #e0edf4; margin: 0;">
+                Explore market trends. Discover patterns. Forecast what could come next.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
-    st.markdown("### ✨ Main features")
-    feature1, feature2, feature3 = st.columns(3)
-    with feature1:
-        st.markdown("#### 🔎 Stock search")
-        st.write("Search supported Indian and US tickers by company name.")
-    with feature2:
-        st.markdown("#### 🧠 LSTM model")
-        st.write("Train a sequence model on historical closing prices and evaluate test predictions.")
-    with feature3:
-        st.markdown("#### 🔮 Future forecast")
-        st.write("View estimates for up to 30 business days and download the results.")
-    st.markdown("### 🔬 Project workflow")
-    st.code(
-        "Select stock → Download historical data → Scale prices → Train LSTM → "
-        "Evaluate model → Generate future estimates",
-        language="text",
+
+    st.markdown("### Start exploring")
+    st.write("Choose a company from the sidebar, set your forecast period, then run the LSTM model.")
+
+    left, middle, right = st.columns(3)
+    with left:
+        st.markdown("#### 📊  Historical trends")
+        st.caption("Explore a company's past closing prices.")
+    with middle:
+        st.markdown("#### 🧠  LSTM intelligence")
+        st.caption("Train a deep-learning model on price sequences.")
+    with right:
+        st.markdown("#### 🔮  Future estimates")
+        st.caption("View a forecast for up to 30 business days.")
+
+    st.markdown("---")
+    st.markdown("#### ⚡ Quick start")
+    st.markdown(
+        "1. Pick a stock in the left sidebar.  "
+        "2. Choose the history and forecast days.  "
+        "3. Click **Train model and predict**."
     )
-    st.markdown("### 🌱 Future scope")
-    st.write(
-        "Possible future improvements include technical indicators, model comparisons, "
-        "prediction-confidence ranges, company-news or market-sentiment analysis, and optional price alerts. "
-        "These are proposed enhancements, not all implemented features."
-    )
-    st.warning(
-        "Educational use only: forecasts are estimates, not guaranteed prices or investment advice. "
-        "The current model mainly learns from historical closing prices and may be inaccurate."
+    st.caption(
+        "Student seminar project • Forecasts are estimates, not guaranteed prices or investment advice."
     )
