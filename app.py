@@ -198,6 +198,46 @@ if st.button("🚀 Train model and predict", type="primary", use_container_width
         st.code(f"{type(exc).__name__}: {exc}")
         st.caption("If the error mentions TensorFlow or Python, fix the Python version in Streamlit Cloud before retrying.")
 else:
-    st.info("👈 In the sidebar, click the stock search box and type the beginning of a company name.")
-    st.markdown("**Try searching:** Reliance, Tata, Infosys, HDFC, Apple, Microsoft, NVIDIA, or Tesla.")
-    st.markdown("After selecting a stock, click **Train model and predict** to view its historical chart, model test results, future forecast, and downloadable CSV.")
+    st.markdown("## Welcome to the Stock Price Prediction Project")
+    st.write(
+        "This seminar project demonstrates how historical stock-price data and an "
+        "LSTM (Long Short-Term Memory) deep-learning model can be used to estimate "
+        "possible future closing prices. It is designed for learning and experimentation."
+    )
+    st.markdown("### 🚀 How to use the website")
+    st.markdown(
+        "1. **Find a stock:** In the left sidebar, type the beginning of a company name, "
+        "such as `Tata`, `Reliance`, `Infosys`, or `Apple`, then select a result.\n"
+        "2. **Choose historical data:** Select 2 years, 5 years, or 10 years.\n"
+        "3. **Set forecast options:** Choose 1–30 future business days and the training epochs.\n"
+        "4. **Run prediction:** Click **Train model and predict** and wait for training to finish.\n"
+        "5. **Review results:** Check the historical chart, actual-versus-predicted chart, RMSE, MAE, and future forecast.\n"
+        "6. **Export results:** Download the forecast as a CSV file."
+    )
+    st.markdown("### ✨ Main features")
+    feature1, feature2, feature3 = st.columns(3)
+    with feature1:
+        st.markdown("#### 🔎 Stock search")
+        st.write("Search supported Indian and US tickers by company name.")
+    with feature2:
+        st.markdown("#### 🧠 LSTM model")
+        st.write("Train a sequence model on historical closing prices and evaluate test predictions.")
+    with feature3:
+        st.markdown("#### 🔮 Future forecast")
+        st.write("View estimates for up to 30 business days and download the results.")
+    st.markdown("### 🔬 Project workflow")
+    st.code(
+        "Select stock → Download historical data → Scale prices → Train LSTM → "
+        "Evaluate model → Generate future estimates",
+        language="text",
+    )
+    st.markdown("### 🌱 Future scope")
+    st.write(
+        "Possible future improvements include technical indicators, model comparisons, "
+        "prediction-confidence ranges, company-news or market-sentiment analysis, and optional price alerts. "
+        "These are proposed enhancements, not all implemented features."
+    )
+    st.warning(
+        "Educational use only: forecasts are estimates, not guaranteed prices or investment advice. "
+        "The current model mainly learns from historical closing prices and may be inaccurate."
+    )
